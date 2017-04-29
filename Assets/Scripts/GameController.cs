@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+//===== Definition DataType =====//
 [System.Serializable]
 public class Player {
+  public PLAYER_TYPE type;
+  public GameObject obj;
   public Image  panel;
   public Text   text;
   public Button button;
@@ -13,156 +17,184 @@ public class Player {
 [System.Serializable]
 public class PlayerColor {
   public Color panelColor;
-  public Color textColor;
+  public Color textColor ;
 }
 
-public class GameController : MonoBehaviour {
-  //----- Definition Variable -----//
-  public  GameObject  gameOverPanel;
-  public  GameObject  restartButton;
-  public  GameObject  startInfo;
-  public  Player      playerX;
-  public  Player      playerO;
-  public  PlayerColor  activePlayerColor;
-  public  PlayerColor  inactivePlayerColor;
-  public  Text        gameOverText;
-  public  Text[]      buttonList;
-  private string      playerSide;
-  private int         moveCount;
+public enum PLAYER_TYPE {
+  NONE    ,
+  TICK    ,
+  CROSS   ,
 
-  //----- State Function      -----//
+  NUM     ,
+};
+
+public enum PLAYER_COLOR_TYPE {
+  ACTIVE = 0,
+  INACTIVE  ,
+
+  NUM       ,
+}
+
+
+public class GameController : MonoBehaviour {
+  //===== Definition DataType =====//
+  public const int GRID_NUM         = 27;
+  public const int PLAYER_COLOR_NUM = (int)PLAYER_COLOR_TYPE.NUM;
+  public const int PLAYER_NUM       = (int)PLAYER_TYPE.NUM      ;
+  //===== Definition Variable =====//
+  public  GameObject    gameOverPanel ;
+  public  GameObject    restartButton ;
+  public  GameObject    startInfo     ;
+  public  GameObject [] gridList      = new GameObject  [GRID_NUM];
+  public  PlayerColor[] playerColors  = new PlayerColor [PLAYER_COLOR_NUM];
+  public  Player     [] playerList    = new Player      [PLAYER_NUM];
+  public  Player        actPlayer     ;
+  public  Text          gameOverText  ;
+
+  //===== State Function =====//
   private void Awake() {
     gameOverPanel.SetActive(false);
     restartButton.SetActive(false);
-    moveCount   = 0;
+    SetButtonsInteractible (true );
 
-    SetGameControllerReferenceOnButtons();
+    SetGameControllerReferenceOnGrids();
+    ResetGrids             (     );
+    SetGridsInteractible   (false);
   }
   
-  //----- Private Function    -----//
-  private void SetGameControllerReferenceOnButtons() {
-    foreach(Text bt in buttonList) {
-      bt.GetComponentInParent<GridSpace>().SetGameControllerReference(this);
+  //===== Private Function =====//
+  //----- Grid関連 -----//
+  // グリッドのgameController指定
+  private void SetGameControllerReferenceOnGrids() {
+    foreach(var grid in gridList) {
+      grid.GetComponent<GridSpace>().SetGameControllerReference( this );
+    }
+  }
+  // グリッドのインタラクティブ変更
+  private void SetGridsInteractible(bool toggle) {
+    foreach (var grid in gridList) {
+      grid.GetComponent<GridSpace>().Interactive = toggle;
+    }
+  }
+  // グリッドのリセット
+  private void ResetGrids() {
+    foreach(var grid in gridList) {
+      grid.GetComponent<GridSpace>().ResetObject();
     }
   }
 
-  private void SetBoardInteractible(bool toggle) {
-    foreach (Text bt in buttonList) {
-      bt.GetComponentInParent<Button>().interactable = toggle;
+  //----- 表示関連 -----//
+  // プレイヤボタンの設定
+  private void SetButtonsInteractible(bool toggle) {
+    foreach(var player in playerList) {
+      if(player.type != PLAYER_TYPE.NONE) {
+        player.button.interactable = toggle;
+      }
     }
   }
-
-  private void SetPlayerButtons(bool toggle) {
-    playerX.button.interactable = toggle;
-    playerO.button.interactable = toggle;
-  }
-
-  private void StartGame() {
-    SetBoardInteractible(true);
-    SetPlayerButtons(false);
-    startInfo.SetActive(false);
-  }
-
-  private void ChangePlayer(string player) {
-    playerSide = player;
-    if (player == "X") {
-      SetPlayerColors(playerX, playerO);
-    } else {
-      SetPlayerColors(playerO, playerX);
-    }
-  }
-
-  private void SetPlayerColor(Player player, PlayerColor color) {
-    player.panel.color = color.panelColor;
-    player.text.color  = color.textColor;
-  }
-  private void SetPlayerColors(Player newPlayer, Player oldPlayer) {
-    SetPlayerColor(newPlayer,   activePlayerColor);
-    SetPlayerColor(oldPlayer, inactivePlayerColor);
-  }
-  private void SetPlayerColorsInactive() {
-    SetPlayerColor(playerO, inactivePlayerColor);
-    SetPlayerColor(playerX, inactivePlayerColor);
-  }
-
+  // ゲームオーバー画面の設定
   private void SetGameOverText(string value) {
     gameOverPanel.SetActive(true);
     gameOverText.text = value;
   }
 
-  private void GameOver(string winningPlayer) {
-    restartButton.SetActive(true);
-    SetBoardInteractible(false);
-    if(winningPlayer == "draw") {
-      SetPlayerColorsInactive();
+  //----- アクティブプレイヤ関連 -----//
+  // アクティブプレイヤの変更
+  private void ChangePlayer(PLAYER_TYPE act_player_type) {
+    foreach(var player in playerList) {
+      if(player.type == act_player_type) {
+        actPlayer = player;
+        player.panel.color = playerColors[(int)PLAYER_COLOR_TYPE.ACTIVE  ].panelColor;
+        player.text .color = playerColors[(int)PLAYER_COLOR_TYPE.ACTIVE  ].textColor ;
+      } else if(player.panel && player.text) {
+        player.panel.color = playerColors[(int)PLAYER_COLOR_TYPE.INACTIVE].panelColor;
+        player.text .color = playerColors[(int)PLAYER_COLOR_TYPE.INACTIVE].textColor ;
+      }
+    }
+  }
+
+  //----- Playaer関連 -----//
+  // プレイヤの取得 : string
+  private Player GetPlayer(string str) {
+    foreach(var player in playerList) {
+      if(player.text && player.text.text == str) {
+        return player;
+      }
+    }
+    Debug.Assert(false, "str(" + str + ") Player is none");
+    return null;
+  }
+  
+  //----- ゲーム進行 -----//
+  // ゲームオーバー処理
+  private void GameOver(PLAYER_TYPE type) {
+    restartButton.SetActive(true );
+    SetGridsInteractible (false);
+    if(type == PLAYER_TYPE.NONE) {
+      ChangePlayer(type);
       SetGameOverText("It's a Draw!");
     } else {
-      SetGameOverText(winningPlayer + " Wins!");
+      SetGameOverText(GetPlayer(type) + " Wins!");
     }
   }
+  
 
-  //----- Public Function     -----//
-  public void SetStartingSide(string startingSide) {
-    ChangePlayer(startingSide);
-    StartGame();
+  //===== Public Function =====//
+  //----- ゲーム進行 -----//
+  // ゲーム開始
+  public void GameStart(string side_str) {
+    ChangePlayer(GetPlayer(side_str).type);
+    SetGridsInteractible  (true );
+    SetButtonsInteractible(false);
+    startInfo.SetActive   (false);
   }
-
-  public string GetPlaySide() {
-    return playerSide;
-  }
-
-  public void ChangeSide() {
-    if (playerSide == "X") {
-      ChangePlayer("O");
-    } else {
-      ChangePlayer("X");
-    }
-  }
-
+  // ターン終了
   public void EndTurn () {
-    moveCount++;
-    if (buttonList[0].text == playerSide && buttonList[1].text == playerSide && buttonList[2].text == playerSide) {
-      GameOver(playerSide);
+    // ヨコX
+    for(int i = 0; i < GRID_NUM; i+=3) {
+      
     }
-    else if (buttonList[3].text == playerSide && buttonList[4].text == playerSide && buttonList[5].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[6].text == playerSide && buttonList[7].text == playerSide && buttonList[8].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[0].text == playerSide && buttonList[3].text == playerSide && buttonList[6].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[1].text == playerSide && buttonList[4].text == playerSide && buttonList[7].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[2].text == playerSide && buttonList[5].text == playerSide && buttonList[8].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[0].text == playerSide && buttonList[4].text == playerSide && buttonList[8].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (buttonList[2].text == playerSide && buttonList[4].text == playerSide && buttonList[6].text == playerSide) {
-      GameOver(playerSide);
-    }
-    else if (moveCount >= 9) {
-      GameOver("draw");
-    }
-    else {
-      ChangeSide();
-    }
+    // ヨコY
+    // ヨコZ
+    // ナナメX
+    // ナナメY
+    // ナナメZ
+    // ナナメ
+    ChangeSide();
   }
-
-  public void RestartGame() {
-    moveCount = 0;
-    foreach (Text bt in buttonList) {
-      bt.text = "";
+  // ゲーム終了
+  public void GameEnd() {
+    foreach (var grid in gridList) {
+      grid.GetComponent<GridSpace>().ResetObject();
     }
     gameOverPanel.SetActive(false);
     restartButton.SetActive(false);
     startInfo.SetActive(true);
-    SetPlayerButtons(true);
-    SetPlayerColorsInactive();
+    SetButtonsInteractible(true);
+    ChangePlayer(PLAYER_TYPE.NONE);
   }
 
+  //----- データ取得 -----//
+  // プレイヤの取得 : PLAYER_TYPE
+  public Player GetPlayer(PLAYER_TYPE type) {
+    foreach(var player in playerList) {
+      if(player.type == type) {
+        return player;
+      }
+    }
+    Debug.Assert(false, "type(" + type + ") Player is none");
+    return null;
+  }
+  // アクティブプレイヤの取得
+  public Player GetActPlayer() {
+    return actPlayer;
+  }
+  // アクティブプレイヤの変更
+  public void ChangeSide() {
+    if (actPlayer.type == PLAYER_TYPE.CROSS) {
+      ChangePlayer(PLAYER_TYPE.TICK );
+    } else {
+      ChangePlayer(PLAYER_TYPE.CROSS);
+    }
+  }
 }
