@@ -56,6 +56,7 @@ public class InputController : MonoBehaviour {
 
   // フリック
   private void GetFlick() {
+    obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, rotate_pos, FLICK_SPEED * Time.deltaTime);
     if(flick_frame > FLICK_FLAME_MIN) {
       Vector3 flick_pos_end = Input.mousePosition;
       if(Vector3.Distance(flick_pos_start, flick_pos_end) > FLICK_DISTANCE_MIN ) {
@@ -69,16 +70,20 @@ public class InputController : MonoBehaviour {
         }
         // 上回転
         if(flick_pos_end.y - flick_pos_start.y > FLICK_DISTANCE_MIN) {
-          //SetFlickRotate(new Vector3( 90,0,0));
+          SetFlickRotate(new Vector3( 90,0,0));
+        }
+        // 下回転
+        if(flick_pos_start.y - flick_pos_end.y > FLICK_DISTANCE_MIN) {
+          SetFlickRotate(new Vector3(-90,0,0));
         }
       }
     }
-    obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, rotate_pos, FLICK_SPEED * Time.deltaTime);
   }
 
   private void SetFlickRotate(Vector3 rot) {
     obj.transform.rotation = rotate_pos;
+    Vector3 local_rot = obj.transform.worldToLocalMatrix.MultiplyVector(rot);
     flick_frame = 0;
-    rotate_pos = obj.transform.rotation * Quaternion.Euler(rot);
+    rotate_pos = rotate_pos * Quaternion.Euler(local_rot);
   }
 }
