@@ -4,17 +4,17 @@ using UnityEngine;
 
 public class InputController : MonoBehaviour {
   public  GameObject  obj;
-  public  int   FLICK_FLAME_MIN    = 50;
-  public  int   FLICK_DISTANCE_MIN = 10;
-  public  float FLICK_SPEED        = 10;
-  private float     flick_frame      ;
-  private Vector3   flick_pos_start  ;
-  private Quaternion rotate_pos       ;
+  public  int   FLICK_FLAME_MIN    = 50;  // フリックとみなすフレーム数
+  public  int   FLICK_DISTANCE_MIN = 10;  // フリックとみなすマウス差分位置
+  public  float FLICK_SPEED        = 10;  // フリック時のオブジェクト回転速度
+  private float     flick_frame        ;  // フリックカウント値(フレーム)
+  private Vector3   flick_pos_start    ;  // フリック開始時点のマウス位置
+  private Quaternion m_rotate_pos      ;  // フリック時のオブジェクト回転の目標角度
 
   //===== Event Function =====//
 	void Start () {
     flick_frame = 0;
-    rotate_pos  = obj.transform.rotation;
+    m_rotate_pos  = obj.transform.rotation;
   }
 	void Update () {
     GameObject click_obj = GetClickObject();
@@ -56,7 +56,7 @@ public class InputController : MonoBehaviour {
 
   // フリック
   private void GetFlick() {
-    obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, rotate_pos, FLICK_SPEED * Time.deltaTime);
+    obj.transform.rotation = Quaternion.Slerp(obj.transform.rotation, m_rotate_pos, FLICK_SPEED * Time.deltaTime);
     if(flick_frame > FLICK_FLAME_MIN) {
       Vector3 flick_pos_end = Input.mousePosition;
       if(Vector3.Distance(flick_pos_start, flick_pos_end) > FLICK_DISTANCE_MIN ) {
@@ -80,10 +80,22 @@ public class InputController : MonoBehaviour {
     }
   }
 
+  // フリックによる回転の設定
   private void SetFlickRotate(Vector3 rot) {
-    obj.transform.rotation = rotate_pos;
+    obj.transform.rotation = m_rotate_pos;
     Vector3 local_rot = obj.transform.worldToLocalMatrix.MultiplyVector(rot);
     flick_frame = 0;
-    rotate_pos = rotate_pos * Quaternion.Euler(local_rot);
+    bool is_rotY = Mathf.Abs(Constant.Orbit(m_rotate_pos.eulerAngles.x, -180f, 180f)) > 85f
+      || Mathf.Abs(Constant.Orbit(m_rotate_pos.eulerAngles.z, -180f, 180f)) > 85f;
+
+    Quaternion rotate_pos = m_rotate_pos * Quaternion.Euler(local_rot);
+
+    // 上下90度回転している場合は戻る回転しか許可しない
+    if(is_rotY && (Mathf.Abs(Constant.Orbit(rotate_pos.eulerAngles.x, -180f, 180f)) > 85f
+      || Mathf.Abs(Constant.Orbit(rotate_pos.eulerAngles.z, -180f, 180f)) > 85f)) {
+      return;
+    }
+
+    m_rotate_pos = rotate_pos;
   }
 }
