@@ -48,6 +48,7 @@ public class GridSpace : MonoBehaviour {
   
   //----- プロパティ -----//
   public bool Interactive { get { return m_is_interactive; } set { m_is_interactive = value; } }
+  public PLAYER_TYPE Type { get { return m_type          ; } }
 
 
   //===== private Function =====//

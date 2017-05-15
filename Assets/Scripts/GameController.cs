@@ -134,7 +134,7 @@ public class GameController : MonoBehaviour {
       ChangePlayer(type);
       SetGameOverText("It's a Draw!");
     } else {
-      SetGameOverText(GetPlayer(type) + " Wins!");
+      SetGameOverText(GetPlayer(type).text.text + " Wins!");
     }
   }
   
@@ -150,20 +150,91 @@ public class GameController : MonoBehaviour {
   }
   // ターン終了
   public void EndTurn () {
+    bool is_game_set = false;
     // ヨコX
-    for(int i = 0; i < GRID_NUM; i+=3) {
-      
+    for(int i = 1; i < GRID_NUM; i+=3) {
+      if(  gridList[i-1].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+1].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
     }
     // ヨコY
+    for(int i = 3; i < GRID_NUM; i+=1) {
+      if(  gridList[i-3].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+3].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+    }
     // ヨコZ
+    for(int i = 9; i < GRID_NUM; i+=1) {
+      if(  gridList[i-9].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+9].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+    }
     // ナナメX
+    for(int i = 12; i+12 < GRID_NUM; i+=1) {
+      if(  gridList[i-12].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i   ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+12].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+      if(  gridList[i-6].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+6].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+    }
     // ナナメY
+    for(int i = 10; i+10 < GRID_NUM; i+=3) {
+      if(  gridList[i-10].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i   ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+10].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+      if(  gridList[i-8].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+8].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+    }
     // ナナメZ
+    for(int i = 4; i+4 < GRID_NUM; i+=9) {
+      if(  gridList[i-4].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+4].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+      if(  gridList[i-2].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i  ].GetComponent<GridSpace>().Type == actPlayer.type
+        && gridList[i+2].GetComponent<GridSpace>().Type == actPlayer.type) {
+        is_game_set = true;
+      }
+    }
     // ナナメ
+    if(  gridList[6 ].GetComponent<GridSpace>().Type == actPlayer.type
+      && gridList[13].GetComponent<GridSpace>().Type == actPlayer.type
+      && gridList[20].GetComponent<GridSpace>().Type == actPlayer.type) {
+      is_game_set = true;
+    }
+    if(  gridList[2 ].GetComponent<GridSpace>().Type == actPlayer.type
+      && gridList[13].GetComponent<GridSpace>().Type == actPlayer.type
+      && gridList[24].GetComponent<GridSpace>().Type == actPlayer.type) {
+      is_game_set = true;
+    }
+
+    if(is_game_set) {
+      GameOver(actPlayer.type);
+      return;
+    }
     ChangeSide();
   }
   // ゲーム終了
   public void GameEnd() {
+    GameOver(actPlayer.type);
     foreach (var grid in gridList) {
       grid.GetComponent<GridSpace>().ResetObject();
     }
