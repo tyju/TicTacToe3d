@@ -1,106 +1,84 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Cst = ConstantNs.Constant; using Tag = ConstantNs.TAG_CONV;
+using Cst = ConstantNs.Constant;
 
 public class InputController : MonoBehaviour {
-  public  GameObject  GridsCObj;
-  public  int   FLICK_FLAME_MIN    = 50;  // フリックとみなすフレーム数
-  public  int   FLICK_DISTANCE_MIN = 10;  // フリックとみなすマウス差分位置
-  public  float FLICK_SPEED        = 10;  // フリック時のオブジェクト回転速度
+  public  float      FLICK_SPEED = 5;  // フリック時のオブジェクト回転速度
 
-  private float     flick_frame        ;  // フリックカウント値(フレーム)
-  private Vector3   flick_pos_start    ;  // フリック開始時点のマウス位置
-  private Quaternion m_rotate_pos      ;  // フリック時のオブジェクト回転の目標角度
+  public  GameObject FlickTargetObj; // フリック時に回転するオブジェクト(中心点)
+  static private Quaternion FlickTargetRot; // フリック時のオブジェクト回転の目標角度
+
 
   //===== Event Function =====//
 	void Start () {
-    flick_frame = 0;
-    m_rotate_pos  = GridsCObj.transform.rotation;
-
+    Flick.Clear();
     Click.Clear();
+
+    FlickTargetRot = FlickTargetObj.transform.rotation;
   }
 	void Update () {
     // データ更新
+    Flick.Update();
     Click.Update();
 
     // 処理
-    if (Click.Object != null) {
-      if(Click.Object.tag == Cst.GetTag(Tag.GRID)) {
-        Click.Object.GetComponent<GridSpace>().SetObject();
-        Click.Clear();
-      }
-    }
-
-    // フリック用カウント
-    {
-      if(Input.GetMouseButton(0)) {
-        if(flick_frame != 0) { flick_frame++; }
-      }
-      if(Input.GetMouseButtonDown(0)) {
-        flick_pos_start = Input.mousePosition;
-        flick_frame = 1;
-      }
-      if(Input.GetMouseButtonUp(0)) {
-        flick_frame = 0;
-      }
-    }
-    GetFlick();
+    SetFlickRotate(Flick.rotation);
+    ChgFlickObj   (              );
+    ChgClickObj   (Click.Object  );
 	}
 
-  //===== Private Function =====//
-  // フリック
-  private void GetFlick() {
-    GridsCObj.transform.rotation = Quaternion.Slerp(GridsCObj.transform.rotation, m_rotate_pos, FLICK_SPEED * Time.deltaTime);
-    if(flick_frame > FLICK_FLAME_MIN) {
-      Vector3 flick_pos_end = Input.mousePosition;
-      if(Vector3.Distance(flick_pos_start, flick_pos_end) > FLICK_DISTANCE_MIN ) {
-        // 左回転
-        if(flick_pos_start.x - flick_pos_end.x > FLICK_DISTANCE_MIN) {
-          SetFlickRotate(new Vector3(0, 90,0));
-        }
-        // 右回転
-        if(flick_pos_end.x - flick_pos_start.x > FLICK_DISTANCE_MIN) {
-          SetFlickRotate(new Vector3(0,-90,0));
-        }
-        // 上回転
-        if(flick_pos_end.y - flick_pos_start.y > FLICK_DISTANCE_MIN) {
-          SetFlickRotate(new Vector3( 90,0,0));
-        }
-        // 下回転
-        if(flick_pos_start.y - flick_pos_end.y > FLICK_DISTANCE_MIN) {
-          SetFlickRotate(new Vector3(-90,0,0));
-        }
-      }
-    }
-  }
 
+  //===== Private Function =====//
   // フリックによる回転の設定
   private void SetFlickRotate(Vector3 rot) {
-    GridsCObj.transform.rotation = m_rotate_pos;
-    Vector3 local_rot = GridsCObj.transform.worldToLocalMatrix.MultiplyVector(rot);
-    flick_frame = 0;
-    bool is_rotY = Mathf.Abs(Cst.Orbit(m_rotate_pos.eulerAngles.x, -180f, 180f)) > 85f
-      || Mathf.Abs(Cst.Orbit(m_rotate_pos.eulerAngles.z, -180f, 180f)) > 85f;
+    if(rot == Vector3.zero) return;
 
-    Quaternion rotate_pos = m_rotate_pos * Quaternion.Euler(local_rot);
+    FlickTargetObj.transform.rotation = FlickTargetRot;
+    Vector3 local_rot = FlickTargetObj.transform.worldToLocalMatrix.MultiplyVector(rot);
+    Quaternion new_target_rot = FlickTargetRot * Quaternion.Euler(local_rot);
+    
+    // 上下回転中か
+    bool is_now_rotY = Mathf.Abs(Mathf.DeltaAngle(0, FlickTargetRot.eulerAngles.x)) > 85f
+      || Mathf.Abs(Mathf.DeltaAngle(0, FlickTargetRot.eulerAngles.z)) > 85f;
+
+    // 今回上下回転か
+    bool is_rotY = Mathf.Abs(Mathf.DeltaAngle(0, new_target_rot.eulerAngles.x)) > 85f
+      || Mathf.Abs(Mathf.DeltaAngle(0, new_target_rot.eulerAngles.z)) > 85f;
 
     // 上下90度回転している場合は戻る回転しか許可しない
-    if(is_rotY && (Mathf.Abs(Cst.Orbit(rotate_pos.eulerAngles.x, -180f, 180f)) > 85f
-      || Mathf.Abs(Cst.Orbit(rotate_pos.eulerAngles.z, -180f, 180f)) > 85f)) {
+    if(is_rotY && is_now_rotY) {
       return;
     }
 
-    m_rotate_pos = rotate_pos;
+    FlickTargetRot = new_target_rot;
+
+    Flick.Clear();
+  }
+
+  // フリックによる回転
+  private void ChgFlickObj() {
+    FlickTargetObj.transform.rotation = Quaternion.Slerp(FlickTargetObj.transform.rotation, FlickTargetRot, FLICK_SPEED * Time.deltaTime);
+  }
+
+  // クリックによるオブジェクトの変更
+  private void ChgClickObj(GameObject click_obj) {
+    if(click_obj == null) return;
+
+    // ○×オブジェクトの場合、オブジェクトを設定
+    if(Click.Object.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
+      Click.Object.GetComponent<GridSpace>().SetObject();
+      Click.Clear();
+    }
   }
 }
 
 public static class Click {
+  //===== Static Definition =====//
   private static GameObject clickObj;
-
-  // プロパティ
-  public static GameObject Object { get { return clickObj; } }
   
+  //===== Static Function =====//
+  //----- 処理 -----//
   // 初期化
   public static void Clear() {
     clickObj = null;
@@ -119,8 +97,71 @@ public static class Click {
       }
     }
   }
+
+  //----- アクセサ -----//
+  // プロパティ
+  public static GameObject Object { get { return clickObj; } }
 }
 
-public class Flick {
+public static class Flick {
+  //===== Static Definication =====//
+  static public  int   FLICK_FLAME_MIN    = 10;  // フリックとみなすフレーム数
+  static public  int   FLICK_DISTANCE_MIN = 50;  // フリックとみなすマウス差分位置
 
+  static private int       flick_frame        ;  // フリックカウント値(フレーム)
+  static private Vector3   flick_pos_start    ;  // フリック開始時点のマウス位置
+
+  //===== Static Function =====//
+  //----- 処理 -----//
+  // 初期化
+  public static void Clear() {
+    flick_frame = 0;
+  }
+
+  // 更新
+  public static void Update() {
+    increaseFrame();
+  }
+
+  //----- アクセサ -----//
+  // 回転方向(Vector3)の取得
+  public static Vector3 rotation { get {
+    if(flick_frame > FLICK_FLAME_MIN) {
+      Vector3 flick_pos_end = Input.mousePosition;
+      if(Vector3.Distance(flick_pos_start, flick_pos_end) > FLICK_DISTANCE_MIN ) {
+        // 左回転
+        if(flick_pos_start.x - flick_pos_end.x > FLICK_DISTANCE_MIN) {
+          return new Vector3(0, 90,0);
+        }
+        // 右回転
+        if(flick_pos_end.x - flick_pos_start.x > FLICK_DISTANCE_MIN) {
+          return new Vector3(0,-90,0);
+        }
+        // 上回転
+        if(flick_pos_end.y - flick_pos_start.y > FLICK_DISTANCE_MIN) {
+          return new Vector3( 90,0,0);
+        }
+        // 下回転
+        if(flick_pos_start.y - flick_pos_end.y > FLICK_DISTANCE_MIN) {
+          return new Vector3(-90,0,0);
+        }
+      }
+    }
+    return Vector3.zero;
+  } }
+
+  //===== Private Function =====//
+  // マウスの挙動によりフリック数[frame]を加算
+  private static void increaseFrame() {
+    if(Input.GetMouseButtonDown(0)) {
+      flick_pos_start = Input.mousePosition;
+      flick_frame = 1;
+    }
+    if(Input.GetMouseButton(0)) {
+      if(flick_frame != 0) { flick_frame++; }
+    }
+    if(Input.GetMouseButtonUp(0)) {
+      Flick.Clear();
+    }
+  }
 }
