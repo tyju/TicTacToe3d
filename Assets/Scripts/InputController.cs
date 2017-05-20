@@ -17,12 +17,18 @@ public class InputController : MonoBehaviour {
 	void Start () {
     flick_frame = 0;
     m_rotate_pos  = GridsCObj.transform.rotation;
+
+    Click.Clear();
   }
 	void Update () {
-    GameObject click_obj = GetClickObject();
-    if (click_obj) {
-      if(click_obj.tag == Cst.GetTag(Tag.GRID)) {
-        click_obj.GetComponent<GridSpace>().SetObject();
+    // データ更新
+    Click.Update();
+
+    // 処理
+    if (Click.Object != null) {
+      if(Click.Object.tag == Cst.GetTag(Tag.GRID)) {
+        Click.Object.GetComponent<GridSpace>().SetObject();
+        Click.Clear();
       }
     }
 
@@ -43,19 +49,6 @@ public class InputController : MonoBehaviour {
 	}
 
   //===== Private Function =====//
-  // クリックされたオブジェクトの取得
-  // @retval == null : クリックされなかった / オブジェクトをクリックしなかった
-  private GameObject GetClickObject() {
-    if(Input.GetMouseButtonDown(0)) {
-      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-      RaycastHit hit = new RaycastHit();
-      if(Physics.Raycast(ray, out hit)) {
-        return hit.collider.gameObject;
-      }
-    }
-    return null;
-  }
-
   // フリック
   private void GetFlick() {
     GridsCObj.transform.rotation = Quaternion.Slerp(GridsCObj.transform.rotation, m_rotate_pos, FLICK_SPEED * Time.deltaTime);
@@ -100,4 +93,34 @@ public class InputController : MonoBehaviour {
 
     m_rotate_pos = rotate_pos;
   }
+}
+
+public static class Click {
+  private static GameObject clickObj;
+
+  // プロパティ
+  public static GameObject Object { get { return clickObj; } }
+  
+  // 初期化
+  public static void Clear() {
+    clickObj = null;
+  }
+
+  // 更新
+  public static void Update() {
+    // クリックオブジェクトの取得
+    if(Input.GetMouseButtonDown(0)) {
+      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+      RaycastHit hit = new RaycastHit();
+      if(Physics.Raycast(ray, out hit)) {
+        clickObj = hit.collider.gameObject;
+      } else {
+        clickObj = null;
+      }
+    }
+  }
+}
+
+public class Flick {
+
 }

@@ -710,7 +710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dce3dfd79955514e8147704bf583a10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  obj: {fileID: 542319273}
+  GridsCObj: {fileID: 542319273}
   FLICK_FLAME_MIN: 8
   FLICK_DISTANCE_MIN: 200
   FLICK_SPEED: 5
@@ -741,7 +741,7 @@ GameObject:
   m_Component:
   - component: {fileID: 542319274}
   m_Layer: 0
-  m_Name: Object
+  m_Name: GridsCenter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
