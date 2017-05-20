@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using Cst = ConstantNs.Constant;
 
 //===== Definition DataType =====//
 [System.Serializable]
@@ -49,7 +49,8 @@ public class GameController : MonoBehaviour {
   public  Player          actPlayer     ;
   public  Text            gameOverText  ;
   [SerializeField]
-  public  GridController  gridCtrler    = new GridController();
+  public  GridController  gridCtrler    = new GridController ();
+  public  InputController inputCtrler   = new InputController();
 
   //===== State Function =====//
   private void Awake() {
@@ -57,7 +58,12 @@ public class GameController : MonoBehaviour {
     restartButton.SetActive(false);
     SetButtonsInteractible (true );
 
-    gridCtrler.Initialize(this);
+    gridCtrler .Initialize(this);
+    inputCtrler.Initialize(    );
+  }
+
+  private void Update() {
+    inputCtrler.Update();
   }
   
   //===== Private Function =====//
@@ -81,11 +87,12 @@ public class GameController : MonoBehaviour {
   // アクティブプレイヤの変更
   private void ChangePlayer(PLAYER_TYPE act_player_type) {
     foreach(var player in playerList) {
+      if(player.panel == null || player.text == null) { continue; }
       if(player.type == act_player_type) {
         actPlayer = player;
         player.panel.color = playerColors[(int)PLAYER_COLOR_TYPE.ACTIVE  ].panelColor;
         player.text .color = playerColors[(int)PLAYER_COLOR_TYPE.ACTIVE  ].textColor ;
-      } else if(player.panel && player.text) {
+      } else {
         player.panel.color = playerColors[(int)PLAYER_COLOR_TYPE.INACTIVE].panelColor;
         player.text .color = playerColors[(int)PLAYER_COLOR_TYPE.INACTIVE].textColor ;
       }
@@ -123,7 +130,8 @@ public class GameController : MonoBehaviour {
   // ゲーム開始
   public void GameStart(string side_str) {
     ChangePlayer(GetPlayer(side_str).type);
-    gridCtrler.GridsInteractive = true;
+    gridCtrler .GridsInteractive = true;
+    inputCtrler.GameStart        = true;
     SetButtonsInteractible(false);
     startInfo.SetActive   (false);
   }
@@ -143,8 +151,8 @@ public class GameController : MonoBehaviour {
   }
   // ゲーム終了
   public void GameEnd() {
-    GameOver(actPlayer.type);
-    gridCtrler.Clear();
+    gridCtrler .Clear();
+    inputCtrler.Clear();
     gameOverPanel.SetActive(false);
     restartButton.SetActive(false);
     startInfo.SetActive(true);

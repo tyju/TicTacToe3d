@@ -9,7 +9,9 @@ namespace ConstantNs {
     NONE,
     MAIN_CAMERA,
     GAME_CTRL,
+    INPUT_CTRL,
     GRID,
+    GRIDC,
   };
 
   // 周回したclamp(ex: 8,10,24 -> 22)
@@ -25,7 +27,9 @@ namespace ConstantNs {
         default: Debug.Assert(false, "Not Exist Tag :" + e_tag); return "";
         case TAG_CONV.MAIN_CAMERA : return "MainCamera"     ;
         case TAG_CONV.GAME_CTRL   : return "GameController" ;
+        case TAG_CONV.INPUT_CTRL  : return "InputController";
         case TAG_CONV.GRID        : return "Grid"           ;
+        case TAG_CONV.GRIDC       : return "GridCenter"     ;
       }
     }
   }

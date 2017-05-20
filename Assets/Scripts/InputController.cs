@@ -3,35 +3,162 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cst = ConstantNs.Constant;
 
-public class InputController : MonoBehaviour {
-  public  float      FLICK_SPEED = 5;  // フリック時のオブジェクト回転速度
-
-  public  GameObject FlickTargetObj; // フリック時に回転するオブジェクト(中心点)
-  static private Quaternion FlickTargetRot; // フリック時のオブジェクト回転の目標角度
-
+[System.Serializable]
+public class InputController{
+  public  Flick flick;
+  private bool isGameStart; // ゲーム中か ※setはプロパティから
 
   //===== Event Function =====//
-	void Start () {
-    Flick.Clear();
-    Click.Clear();
+  public void Initialize() {
+    flick = Flick.Instance;
+    flick.Initialize();
 
-    FlickTargetRot = FlickTargetObj.transform.rotation;
+    Clear();
   }
-	void Update () {
-    // データ更新
-    Flick.Update();
-    Click.Update();
 
-    // 処理
-    SetFlickRotate(Flick.rotation);
-    ChgFlickObj   (              );
-    ChgClickObj   (Click.Object  );
+  public void Clear() {
+    flick.Clear();
+
+    isGameStart = false;
+  }
+	public void Update() {
+    flick.ChgFlickObj();
+
+    if(Input.GetMouseButtonDown(0)) {
+      flick.Start(Input.mousePosition);
+    }
+    if(Input.GetMouseButton(0)) {
+      flick.Update(Input.mousePosition);
+      if(!flick.IsFlicked() && isGameStart) {
+        flick.Action();
+      }
+    }
+    if(Input.GetMouseButtonUp(0)) {
+      if(!flick.IsFlicked()) {
+        Click.Action(Input.mousePosition);
+      }
+
+      flick.Clear();
+    }
 	}
 
 
+  //===== Public Function =====//
+  public bool GameStart { set { Clear(); isGameStart = value; } }
+}
+
+public static class Click {
+  //===== Event Function =====//
+  public static void Action(Vector3 mouse_pos) {
+    // オブジェクトをクリックしているか判定
+    Ray ray = Camera.main.ScreenPointToRay(mouse_pos);
+    RaycastHit hit = new RaycastHit();
+    if(Physics.Raycast(ray, out hit)) {
+      GameObject obj = hit.collider.gameObject;
+      ChgClickObj(hit.collider.gameObject);
+    }
+  }
+
+
   //===== Private Function =====//
+  // クリックによるオブジェクトの変更
+  static private void ChgClickObj(GameObject click_obj) {
+    if(click_obj == null) return;
+
+    // ○×オブジェクトの場合、オブジェクトを設定
+    if(click_obj.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
+      click_obj.GetComponent<GridSpace>().SetObject();
+    }
+  }
+}
+
+[System.Serializable]
+public class Flick {
+  private static Flick instance = new Flick();
+  public  static Flick Instance { get { return instance; } }
+
+  //===== Static Definication =====//
+  public  int   FLICK_DISTANCE_MIN = 50 ; // フリックとみなすマウス差分位置
+  public  int   FLICK_FLAME_MIN    = 10 ; // フリックとみなすフレーム数
+  public  float FLICK_SPEED        = 5  ; // フリック時のオブジェクト回転速度
+
+  public  GameObject FlickTargetObj     ; // フリック時に回転するオブジェクト(中心点)
+  private Quaternion FlickTargetRot     ; // フリック時のオブジェクト回転の目標角度
+  private int        flick_frame        ; // フリックカウント値(フレーム)
+  private Vector3    flick_pos_start    ; // フリック開始時点のマウス位置
+  private Vector3    flick_pos_end      ; // フリック終了時点のマウス位置
+  private bool       is_flicked         ; // 現在フリック中か
+
+  //===== Event Function =====//
+  public void Initialize() {
+    FlickTargetObj = GameObject.FindGameObjectWithTag(Cst.GetTag(ConstantNs.TAG_CONV.GRIDC));
+    FlickTargetRot = FlickTargetObj.transform.rotation;
+    Clear();
+  }
+
+  public void Clear() {
+    flick_pos_start = Vector3.zero;
+    flick_pos_end   = Vector3.zero;
+    flick_frame     = 0;
+    is_flicked      = false;
+  }
+
+  public void Start(Vector3 start_pos) {
+    flick_pos_start = start_pos;
+  }
+  
+  public void Update(Vector3 click_pos) {
+    if(flick_pos_start != Vector3.zero) {
+      flick_pos_end = click_pos;
+      frameIncrease();
+    }
+  }
+
+  public void Action() {
+    SetFlickRotate();
+  }
+
+
+  //===== Public Function =====//
+  public bool IsFlicked() {
+    return is_flicked;
+  }
+
+  // フリックによる回転
+  public void ChgFlickObj() {
+    FlickTargetObj.transform.rotation = Quaternion.Slerp(FlickTargetObj.transform.rotation, FlickTargetRot, FLICK_SPEED * Time.deltaTime);
+  }
+  
+
+  //===== Private Function =====//
+  private void frameIncrease() {
+    flick_frame++;
+  }
+
+  // 回転方向(Vector3)の取得
+  public Vector3 GetRotate() {
+    // 左回転
+    if(flick_pos_start.x - flick_pos_end.x > FLICK_DISTANCE_MIN) {
+      return new Vector3(0, 90,0);
+    }
+    // 右回転
+    if(flick_pos_end.x - flick_pos_start.x > FLICK_DISTANCE_MIN) {
+      return new Vector3(0,-90,0);
+    }
+    // 上回転
+    if(flick_pos_end.y - flick_pos_start.y > FLICK_DISTANCE_MIN) {
+      return new Vector3( 90,0,0);
+    }
+    // 下回転
+    if(flick_pos_start.y - flick_pos_end.y > FLICK_DISTANCE_MIN) {
+      return new Vector3(-90,0,0);
+    }
+    return Vector3.zero;
+  }
+
   // フリックによる回転の設定
-  private void SetFlickRotate(Vector3 rot) {
+  private void SetFlickRotate() {
+    Vector3 rot = GetRotate();
     if(rot == Vector3.zero) return;
 
     FlickTargetObj.transform.rotation = FlickTargetRot;
@@ -52,116 +179,6 @@ public class InputController : MonoBehaviour {
     }
 
     FlickTargetRot = new_target_rot;
-
-    Flick.Clear();
-  }
-
-  // フリックによる回転
-  private void ChgFlickObj() {
-    FlickTargetObj.transform.rotation = Quaternion.Slerp(FlickTargetObj.transform.rotation, FlickTargetRot, FLICK_SPEED * Time.deltaTime);
-  }
-
-  // クリックによるオブジェクトの変更
-  private void ChgClickObj(GameObject click_obj) {
-    if(click_obj == null) return;
-
-    // ○×オブジェクトの場合、オブジェクトを設定
-    if(Click.Object.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
-      Click.Object.GetComponent<GridSpace>().SetObject();
-      Click.Clear();
-    }
-  }
-}
-
-public static class Click {
-  //===== Static Definition =====//
-  private static GameObject clickObj;
-  
-  //===== Static Function =====//
-  //----- 処理 -----//
-  // 初期化
-  public static void Clear() {
-    clickObj = null;
-  }
-
-  // 更新
-  public static void Update() {
-    // クリックオブジェクトの取得
-    if(Input.GetMouseButtonDown(0)) {
-      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-      RaycastHit hit = new RaycastHit();
-      if(Physics.Raycast(ray, out hit)) {
-        clickObj = hit.collider.gameObject;
-      } else {
-        clickObj = null;
-      }
-    }
-  }
-
-  //----- アクセサ -----//
-  // プロパティ
-  public static GameObject Object { get { return clickObj; } }
-}
-
-public static class Flick {
-  //===== Static Definication =====//
-  static public  int   FLICK_FLAME_MIN    = 10;  // フリックとみなすフレーム数
-  static public  int   FLICK_DISTANCE_MIN = 50;  // フリックとみなすマウス差分位置
-
-  static private int       flick_frame        ;  // フリックカウント値(フレーム)
-  static private Vector3   flick_pos_start    ;  // フリック開始時点のマウス位置
-
-  //===== Static Function =====//
-  //----- 処理 -----//
-  // 初期化
-  public static void Clear() {
-    flick_frame = 0;
-  }
-
-  // 更新
-  public static void Update() {
-    increaseFrame();
-  }
-
-  //----- アクセサ -----//
-  // 回転方向(Vector3)の取得
-  public static Vector3 rotation { get {
-    if(flick_frame > FLICK_FLAME_MIN) {
-      Vector3 flick_pos_end = Input.mousePosition;
-      if(Vector3.Distance(flick_pos_start, flick_pos_end) > FLICK_DISTANCE_MIN ) {
-        // 左回転
-        if(flick_pos_start.x - flick_pos_end.x > FLICK_DISTANCE_MIN) {
-          return new Vector3(0, 90,0);
-        }
-        // 右回転
-        if(flick_pos_end.x - flick_pos_start.x > FLICK_DISTANCE_MIN) {
-          return new Vector3(0,-90,0);
-        }
-        // 上回転
-        if(flick_pos_end.y - flick_pos_start.y > FLICK_DISTANCE_MIN) {
-          return new Vector3( 90,0,0);
-        }
-        // 下回転
-        if(flick_pos_start.y - flick_pos_end.y > FLICK_DISTANCE_MIN) {
-          return new Vector3(-90,0,0);
-        }
-      }
-    }
-    return Vector3.zero;
-  } }
-
-  //===== Private Function =====//
-  // マウスの挙動によりフリック数[frame]を加算
-  private static void increaseFrame() {
-    if(Input.GetMouseButtonDown(0)) {
-      flick_pos_start = Input.mousePosition;
-      flick_frame = 1;
-    }
-    if(Input.GetMouseButton(0)) {
-      if(flick_frame != 0) { flick_frame++; }
-    }
-    if(Input.GetMouseButtonUp(0)) {
-      Flick.Clear();
-    }
+    is_flicked = true;
   }
 }
