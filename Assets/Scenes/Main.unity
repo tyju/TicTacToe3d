@@ -683,48 +683,6 @@ GameObject:
   m_PrefabParentObject: {fileID: 1024244590588772, guid: 1bf8c2a7d5b975b47a220a9afa43c937,
     type: 2}
   m_PrefabInternal: {fileID: 1799620549}
---- !u!1 &492076625
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 492076627}
-  - component: {fileID: 492076626}
-  m_Layer: 0
-  m_Name: Input Controller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &492076626
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 492076625}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2dce3dfd79955514e8147704bf583a10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FLICK_SPEED: 10
-  FlickTargetObj: {fileID: 542319273}
---- !u!4 &492076627
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 492076625}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &531583751 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1024244590588772, guid: 1bf8c2a7d5b975b47a220a9afa43c937,
@@ -740,7 +698,7 @@ GameObject:
   - component: {fileID: 542319274}
   m_Layer: 0
   m_Name: GridsCenter
-  m_TagString: Untagged
+  m_TagString: GridCenter
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -757,7 +715,7 @@ Transform:
   m_Children:
   - {fileID: 254992883}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &635740607
 Prefab:
@@ -938,7 +896,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 35.995003, y: -34.087, z: -6.0090003}
 --- !u!1 &759509582
 GameObject:
@@ -1552,6 +1510,16 @@ Prefab:
       propertyPath: gridList.Array.data[35]
       value: 
       objectReference: {fileID: 2078196185}
+    - target: {fileID: 114242959221998432, guid: 4cc227163645c0f4f82e4bbfc78e4ded,
+        type: 2}
+      propertyPath: inputCtrler.FlickTargetObj
+      value: 
+      objectReference: {fileID: 542319273}
+    - target: {fileID: 114242959221998432, guid: 4cc227163645c0f4f82e4bbfc78e4ded,
+        type: 2}
+      propertyPath: inputCtrler.flick.FlickTargetObj
+      value: 
+      objectReference: {fileID: 542319273}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4cc227163645c0f4f82e4bbfc78e4ded, type: 2}
   m_IsPrefabParent: 0
@@ -2512,7 +2480,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1654294701}
-        m_MethodName: RestartGame
+        m_MethodName: GameEnd
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2950,6 +2918,12 @@ MonoBehaviour:
     - {fileID: 1945461789}
     - {fileID: 1733867935}
     - {fileID: 2078196185}
+  inputCtrler:
+    flick:
+      FLICK_DISTANCE_MIN: 50
+      FLICK_FLAME_MIN: 10
+      FLICK_SPEED: 5
+      FlickTargetObj: {fileID: 542319273}
 --- !u!4 &1654294702
 Transform:
   m_ObjectHideFlags: 0
@@ -2962,7 +2936,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1676448560
 GameObject:
