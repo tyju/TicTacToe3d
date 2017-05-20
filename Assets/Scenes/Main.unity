@@ -710,10 +710,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dce3dfd79955514e8147704bf583a10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GridsCObj: {fileID: 542319273}
-  FLICK_FLAME_MIN: 8
-  FLICK_DISTANCE_MIN: 200
-  FLICK_SPEED: 5
+  FLICK_SPEED: 10
+  FlickTargetObj: {fileID: 542319273}
 --- !u!4 &492076627
 Transform:
   m_ObjectHideFlags: 0
@@ -1010,87 +1008,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 759509582}
---- !u!1 &761254610
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 5
-  m_Component:
-  - component: {fileID: 761254614}
-  - component: {fileID: 761254613}
-  - component: {fileID: 761254612}
-  - component: {fileID: 761254611}
-  m_Layer: 0
-  m_Name: Cube
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!23 &761254611
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 761254610}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_PreserveUVs: 1
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
---- !u!65 &761254612
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 761254610}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!33 &761254613
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 761254610}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &761254614
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 761254610}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -925}
-  m_LocalScale: {x: 100, y: 100, z: 100}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &774639071
 Prefab:
   m_ObjectHideFlags: 0
@@ -1366,6 +1283,11 @@ Prefab:
     - target: {fileID: 114242959221998432, guid: 4cc227163645c0f4f82e4bbfc78e4ded,
         type: 2}
       propertyPath: gridList.Array.size
+      value: 27
+      objectReference: {fileID: 0}
+    - target: {fileID: 114242959221998432, guid: 4cc227163645c0f4f82e4bbfc78e4ded,
+        type: 2}
+      propertyPath: gridCtrler.gridList.Array.size
       value: 27
       objectReference: {fileID: 0}
     - target: {fileID: 4903962502665406, guid: 4cc227163645c0f4f82e4bbfc78e4ded, type: 2}
@@ -2971,34 +2893,6 @@ MonoBehaviour:
   gameOverPanel: {fileID: 1924227748}
   restartButton: {fileID: 1446396718}
   startInfo: {fileID: 1307705995}
-  gridList:
-  - {fileID: 1065967171}
-  - {fileID: 2111668314}
-  - {fileID: 860959002}
-  - {fileID: 135326661}
-  - {fileID: 1845618819}
-  - {fileID: 1038749176}
-  - {fileID: 1505337142}
-  - {fileID: 117178751}
-  - {fileID: 913095324}
-  - {fileID: 1004441759}
-  - {fileID: 1874903024}
-  - {fileID: 531583751}
-  - {fileID: 135455991}
-  - {fileID: 474550399}
-  - {fileID: 857235698}
-  - {fileID: 1556708478}
-  - {fileID: 1128980649}
-  - {fileID: 1647945974}
-  - {fileID: 1903417772}
-  - {fileID: 1994209334}
-  - {fileID: 308704926}
-  - {fileID: 1248536130}
-  - {fileID: 1759379079}
-  - {fileID: 1702902759}
-  - {fileID: 1945461789}
-  - {fileID: 1733867935}
-  - {fileID: 2078196185}
   playerColors:
   - panelColor: {r: 0.5019608, g: 1, b: 1, a: 1}
     textColor: {r: 0.2, g: 0.4, b: 0.4, a: 1}
@@ -3027,6 +2921,35 @@ MonoBehaviour:
     text: {fileID: 0}
     button: {fileID: 0}
   gameOverText: {fileID: 1067761644}
+  gridCtrler:
+    gridList:
+    - {fileID: 1065967171}
+    - {fileID: 2111668314}
+    - {fileID: 860959002}
+    - {fileID: 135326661}
+    - {fileID: 1845618819}
+    - {fileID: 1038749176}
+    - {fileID: 1505337142}
+    - {fileID: 117178751}
+    - {fileID: 913095324}
+    - {fileID: 1004441759}
+    - {fileID: 1874903024}
+    - {fileID: 531583751}
+    - {fileID: 135455991}
+    - {fileID: 474550399}
+    - {fileID: 857235698}
+    - {fileID: 1556708478}
+    - {fileID: 1128980649}
+    - {fileID: 1647945974}
+    - {fileID: 1903417772}
+    - {fileID: 1994209334}
+    - {fileID: 308704926}
+    - {fileID: 1248536130}
+    - {fileID: 1759379079}
+    - {fileID: 1702902759}
+    - {fileID: 1945461789}
+    - {fileID: 1733867935}
+    - {fileID: 2078196185}
 --- !u!4 &1654294702
 Transform:
   m_ObjectHideFlags: 0
