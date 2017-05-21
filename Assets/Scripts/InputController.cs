@@ -5,25 +5,40 @@ using Cst = ConstantNs.Constant;
 
 [System.Serializable]
 public class InputController{
-  public  Flick flick;
+  public  Flick  flick ;
+  public  Cursor cursor;
   private bool isGameStart; // ゲーム中か ※setはプロパティから
 
   //===== Event Function =====//
   public void Initialize() {
-    flick = Flick.Instance;
-    flick.Initialize();
+    flick  = Flick .Instance;
+    cursor = Cursor.Instance;
+    flick .Initialize();
+    cursor.Initialize();
 
     Clear();
   }
 
   public void Clear() {
-    flick.Clear();
+    flick .Clear();
+    cursor.Clear();
 
     isGameStart = false;
   }
 	public void Update() {
     flick.ChgFlickObj();
 
+    UpdateClick ();
+    UpdateCursor();
+	}
+
+
+  //===== Public Function =====//
+  public bool GameStart { set { Clear(); isGameStart = value; } }
+
+  //===== Private Function =====//
+  // クリック時の操作
+  private void UpdateClick() {
     if(Input.GetMouseButtonDown(0)) {
       flick.Start(Input.mousePosition);
     }
@@ -40,11 +55,12 @@ public class InputController{
 
       flick.Clear();
     }
-	}
-
-
-  //===== Public Function =====//
-  public bool GameStart { set { Clear(); isGameStart = value; } }
+  }
+  
+  // オブジェクト選択時の操作
+  private void UpdateCursor() {
+    cursor.Update(Input.mousePosition);
+  }
 }
 
 public static class Click {
@@ -54,7 +70,6 @@ public static class Click {
     Ray ray = Camera.main.ScreenPointToRay(mouse_pos);
     RaycastHit hit = new RaycastHit();
     if(Physics.Raycast(ray, out hit)) {
-      GameObject obj = hit.collider.gameObject;
       ChgClickObj(hit.collider.gameObject);
     }
   }
@@ -180,5 +195,55 @@ public class Flick {
 
     FlickTargetRot = new_target_rot;
     is_flicked = true;
+  }
+}
+
+[System.Serializable]
+public class Cursor {
+  private static Cursor instance = new Cursor();
+  public  static Cursor Instance { get { return instance; } }
+
+  //===== Public Definication =====//
+  private GameObject cursorObj;
+
+  //===== Event Function =====//
+  public void Initialize() {
+    cursorObj = GameObject.FindGameObjectWithTag(Cst.GetTag(ConstantNs.TAG_CONV.CURSOR));
+
+    Clear();
+  }
+
+  public void Clear() {
+    cursorObj.SetActive(false);
+  }
+
+  public void Update(Vector3 mouse_pos) {
+    // オブジェクトにカーソルがあっているか判定
+    Ray ray = Camera.main.ScreenPointToRay(mouse_pos);
+    RaycastHit hit = new RaycastHit();
+    if(Physics.Raycast(ray, out hit)) {
+      On(hit.collider.gameObject);
+    }
+  }
+
+  //===== Private Function =====//
+  // オブジェクトを選択状態にする
+  private void On(GameObject cursor_obj) {
+    if(cursor_obj == null) return;
+
+    // ○×オブジェクトの場合、クリック可能なら選択状態にする
+    if(cursor_obj.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
+      if(cursor_obj.GetComponent<GridSpace>().IsClickable()) {
+        ChangeSelect(cursor_obj.transform.position);
+      } else {
+        Clear();
+      }
+    }
+  }
+
+  // 選択状態の変更
+  private void ChangeSelect(Vector3 pos) {
+    cursorObj.transform.position = pos;
+    cursorObj.SetActive(true);
   }
 }

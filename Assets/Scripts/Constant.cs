@@ -12,6 +12,7 @@ namespace ConstantNs {
     INPUT_CTRL,
     GRID,
     GRIDC,
+    CURSOR,
   };
 
   // 周回したclamp(ex: 8,10,24 -> 22)
@@ -30,6 +31,7 @@ namespace ConstantNs {
         case TAG_CONV.INPUT_CTRL  : return "InputController";
         case TAG_CONV.GRID        : return "Grid"           ;
         case TAG_CONV.GRIDC       : return "GridCenter"     ;
+        case TAG_CONV.CURSOR      : return "Cursor"         ;
       }
     }
   }

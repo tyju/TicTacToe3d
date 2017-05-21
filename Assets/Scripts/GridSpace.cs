@@ -29,7 +29,7 @@ public class GridSpace : MonoBehaviour {
   //----- オブジェクト変更関連 -----//
   // オブジェクトの設定
   public void SetObject() {
-    if(m_type == PLAYER_TYPE.NONE && m_is_interactive) {
+    if(IsClickable()) {
       ChangeObject(gameController.players.ActPlayer.type);
       m_is_interactive = false;
 
@@ -41,6 +41,10 @@ public class GridSpace : MonoBehaviour {
     Debug.Assert(gameController, "gamecontroller is null");
     ChangeObject(PLAYER_TYPE.NONE);
     m_is_interactive = true;
+  }
+  // オブジェクトはクリック可能か
+  public bool IsClickable() {
+    return m_type == PLAYER_TYPE.NONE && m_is_interactive;
   }
   
   //----- プロパティ -----//
@@ -57,10 +61,9 @@ public class GridSpace : MonoBehaviour {
     if(transform.childCount > 0) {
       Destroy(transform.GetChild(0).gameObject);
     }
-    Debug.Assert(player.obj, "not obj");
-    GameObject create_obj = Instantiate (player.obj.gameObject, transform);
-    create_obj.transform.position = transform.position;
     if(type != PLAYER_TYPE.NONE) {
+      GameObject create_obj = Instantiate (player.obj.gameObject, transform);
+      create_obj.transform.position = transform.position;
       create_obj.transform.LookAt(camera.transform);
     }
   }
