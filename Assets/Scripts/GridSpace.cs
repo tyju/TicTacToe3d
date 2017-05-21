@@ -30,9 +30,7 @@ public class GridSpace : MonoBehaviour {
   // オブジェクトの設定
   public void SetObject() {
     if(m_type == PLAYER_TYPE.NONE && m_is_interactive) {
-      var player = gameController.GetActPlayer();
-      m_type = player.type;
-      ChangeObject(m_type);
+      ChangeObject(gameController.players.ActPlayer.type);
       m_is_interactive = false;
 
       gameController.EndTurn();
@@ -40,9 +38,8 @@ public class GridSpace : MonoBehaviour {
   }
   // オブジェクトのリセット
   public void ResetObject() {
-    m_type = PLAYER_TYPE.NONE;
     Debug.Assert(gameController, "gamecontroller is null");
-    ChangeObject(m_type);
+    ChangeObject(PLAYER_TYPE.NONE);
     m_is_interactive = true;
   }
   
@@ -55,7 +52,8 @@ public class GridSpace : MonoBehaviour {
   //----- オブジェクト変更関連 -----//
   // オブジェクトの変更
   private void ChangeObject(PLAYER_TYPE type) {
-    Player player = gameController.GetPlayer(type);
+    m_type = type;
+    Player player = gameController.players.GetPlayer(m_type);
     if(transform.childCount > 0) {
       Destroy(transform.GetChild(0).gameObject);
     }

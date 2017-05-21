@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Linq;
 
 [System.Serializable]
-public class GridController {
+public class Grids {
   //===== Public Definication =====//
-  public GameObject [] gridList;
+  public GridSpace [] gridList;
 
   //===== Public Function =====//
   //----- 処理 -----//
@@ -22,28 +24,22 @@ public class GridController {
   }
   
   private void Reset() {
-    foreach(var grid in gridList) {
-      grid.GetComponent<GridSpace>().ResetObject();
-    }
+    Array.ForEach(gridList, i => i.ResetObject());
   }
 
   //----- アクセサ -----//
-  public bool GridsInteractive { set {
-    foreach (var grid in gridList) {
-      grid.GetComponent<GridSpace>().Interactive = value;
-    }
-  } }
+  public bool GridsInteractive { set { Array.ForEach(gridList, i => i.Interactive = value); } }
   
   
   //----- 勝敗判定 -----//
   // 勝敗判定 : 勝利
   public bool IsWin() {
     // ヨコX
-    for(int i = 1 ; i    < gridList.Length; i+=3) { if(IsWin(i-1 , i, i+1 )) { return true; } }
+    for(int i = 1 ; i+1  < gridList.Length; i+=3) { if(IsWin(i-1 , i, i+1 )) { return true; } }
     // ヨコY
-    for(int i = 3 ; i    < gridList.Length; i+=1) { if(IsWin(i-3 , i, i+3 )) { return true; } }
+    for(int i = 3 ; i+3  < gridList.Length; i+=1) { if(IsWin(i-3 , i, i+3 )) { return true; } }
     // ヨコZ
-    for(int i = 9 ; i    < gridList.Length; i+=1) { if(IsWin(i-9 , i, i+9 )) { return true; } }
+    for(int i = 9 ; i+9  < gridList.Length; i+=1) { if(IsWin(i-9 , i, i+9 )) { return true; } }
     // ナナメX
     for(int i = 12; i+12 < gridList.Length; i+=1) {
       if(IsWin(i-12, i, i+12)) { return true; }
@@ -69,28 +65,24 @@ public class GridController {
   }
   // 勝敗判定 : 引き分け
   public bool IsDrow() {
-    for(int i = 0; i < gridList.Length; i++) {
-      if(gridList[i].GetComponent<GridSpace>().Type == PLAYER_TYPE.NONE) return false;
-    }
-    return true;
+    return !gridList.Any(i => i.Type == PLAYER_TYPE.NONE);
   }
     
   
   //===== Private Function =====//
   // gameController指定
   private void SetGameController(GameController gm_ctrler) {
-    foreach(var grid in gridList) {
-      grid.GetComponent<GridSpace>().SetGameControllerReference( gm_ctrler );
-    }
+    Array.ForEach(gridList, i => i.SetGameControllerReference(gm_ctrler));
   }
 
   // 勝敗判定 : 勝利 : 1列
   private bool IsWin(int a, int b, int c) {
-    PLAYER_TYPE type = gridList[a].GetComponent<GridSpace>().Type;
+    Debug.Assert(gridList.Length > a && gridList.Length > b && gridList.Length > c, a + " " + b + " " + c);
+    PLAYER_TYPE type = gridList[a].Type;
     if(type == PLAYER_TYPE.NONE) { return false; }
 
-    if(  gridList[b].GetComponent<GridSpace>().Type == type
-      && gridList[c].GetComponent<GridSpace>().Type == type) {
+    if(  gridList[b].Type == type
+      && gridList[c].Type == type) {
       return true;
     }
     return false;
