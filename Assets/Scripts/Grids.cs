@@ -6,6 +6,10 @@ using System.Linq;
 
 [System.Serializable]
 public class Grids {
+  private static Grids instance = new Grids();
+  public  static Grids Instance { get { return instance; } }
+  private Grids() { }
+
   //===== Public Definication =====//
   public GridSpace [] gridList;
 
@@ -30,6 +34,17 @@ public class Grids {
   //----- アクセサ -----//
   public bool GridsInteractive { set { Array.ForEach(gridList, i => i.Interactive = value); } }
   
+  // 指定されたGridは選択可能か
+  public bool IsClickable(GameObject obj) {
+    var grid_idx = Array.FindIndex(gridList, i => i.transform.gameObject == obj);
+    // 1つ下のGridは出現後でなければ選択できない
+    var under_grid_idx = grid_idx + 3;
+    if(under_grid_idx % 9 > 2 && gridList[under_grid_idx].IsClickable()) {
+      return false;
+    }
+    // 選択可能でなければ選択できない
+    return gridList[grid_idx].IsClickable();
+  }
   
   //----- 勝敗判定 -----//
   // 勝敗判定 : 勝利
@@ -37,7 +52,7 @@ public class Grids {
     // ヨコX
     for(int i = 1 ; i+1  < gridList.Length; i+=3) { if(IsWin(i-1 , i, i+1 )) { return true; } }
     // ヨコY
-    for(int i = 3 ; i+3  < gridList.Length; i+=1) { if(IsWin(i-3 , i, i+3 )) { return true; } }
+    for(int i = 3 ; i+3  < (gridList.Length)/3; i=(i+9)%(gridList.Length-1)) { if(IsWin(i-3 , i, i+3 )) { return true; } }
     // ヨコZ
     for(int i = 9 ; i+9  < gridList.Length; i+=1) { if(IsWin(i-9 , i, i+9 )) { return true; } }
     // ナナメX
@@ -83,6 +98,7 @@ public class Grids {
 
     if(  gridList[b].Type == type
       && gridList[c].Type == type) {
+      Debug.Log(a + " " + b + " " + c);
       return true;
     }
     return false;

@@ -6,9 +6,9 @@ public class GameController : MonoBehaviour {
   //===== Public Definition Variable =====//
   [SerializeField]
   public  Players         players       = new Players        ();
-  public  Grids           grids         = new Grids          ();
   public  InputController inputCtrler   = new InputController();
   public  UIController    UICtrler      = new UIController   ();
+  public  Grids           grids         = Grids.Instance       ;
 
   //===== State Function =====//
   private void Awake() {

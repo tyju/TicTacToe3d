@@ -82,7 +82,10 @@ public static class Click {
 
     // ○×オブジェクトの場合、オブジェクトを設定
     if(click_obj.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
-      click_obj.GetComponent<GridSpace>().SetObject();
+      // クリック可能なら演出開始
+      if(Grids.Instance.IsClickable(click_obj)) {
+        click_obj.GetComponent<GridSpace>().SetObject();
+      }
     }
   }
 }
@@ -91,6 +94,7 @@ public static class Click {
 public class Flick {
   private static Flick instance = new Flick();
   public  static Flick Instance { get { return instance; } }
+  private Flick() { }
 
   //===== Static Definication =====//
   public  int   FLICK_DISTANCE_MIN = 50 ; // フリックとみなすマウス差分位置
@@ -202,6 +206,7 @@ public class Flick {
 public class Cursor {
   private static Cursor instance = new Cursor();
   public  static Cursor Instance { get { return instance; } }
+  private Cursor() { }
 
   //===== Public Definication =====//
   private GameObject cursorObj;
@@ -233,7 +238,7 @@ public class Cursor {
 
     // ○×オブジェクトの場合、クリック可能なら選択状態にする
     if(cursor_obj.tag == Cst.GetTag(ConstantNs.TAG_CONV.GRID)) {
-      if(cursor_obj.GetComponent<GridSpace>().IsClickable()) {
+      if(Grids.Instance.IsClickable(cursor_obj)) {
         ChangeSelect(cursor_obj.transform.position);
       } else {
         Clear();
